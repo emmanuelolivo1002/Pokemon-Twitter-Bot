@@ -9,7 +9,7 @@ var T = new Twit({
   access_token: process.env.ACCESS_TOKEN,
   access_token_secret: process.env.ACCESS_TOKEN_SECRET
 })
-
+var stream = T.stream('user');
 
 // Poke-API config
 var Pokedex = require('pokedex-promise-v2');
@@ -22,12 +22,31 @@ var options = {
 var P = new Pokedex(options);
 
 
-// create tweet
+// constants
 const totalPokemon = 802;
 
+
+const quotes = require('./quotes');
+
+
 // Tweet every 24 hours
-// setInterval(tweetRandomPokemon, 1000*60*60*24);
 tweetRandomPokemon();
+setInterval(tweetRandomPokemon, 1000*60*60*24);
+
+
+
+// When followed
+stream.on('follow', followed);
+
+function followed(eventMessage) {
+  var screenName = eventMessage.source.screen_name;
+  console.log(screenName+" followed!");
+
+  var quote = quotes[Math.floor(Math.random()*quotes.length)];
+
+  tweetIt("@"+screenName+" Thank You for following! "+quote);
+}
+
 
 function tweetRandomPokemon() {
   var rand = Math.floor(Math.random() * Math.floor(totalPokemon));
@@ -52,7 +71,7 @@ function tweetRandomPokemon() {
     console.log(tweet);
 
 
-    // tweetIt(tweet);
+    tweetIt(tweet);
 
   })
   .catch(function(error) {
@@ -63,7 +82,11 @@ function tweetRandomPokemon() {
 // Post tweet
 function tweetIt(text) {
   T.post('statuses/update', { status: text }, function(err, data, response) {
-    console.log(data)
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Tweet sent");
+    }
   })
 }
 
