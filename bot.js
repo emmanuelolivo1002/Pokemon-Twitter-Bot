@@ -1,6 +1,12 @@
 // dotenv congig
 require('dotenv').config()
 
+// fs config
+const fs = require('fs');
+
+// request config
+const request = require('request');
+
 // Twit config
 const Twit = require('twit');
 var T = new Twit({
@@ -25,7 +31,11 @@ var P = new Pokedex(options);
 // constants
 const totalPokemon = 802;
 
+// Image data
+const filename = "pokemon.png";
 
+
+// Random quotes
 const quotes = require('./quotes');
 
 
@@ -47,13 +57,61 @@ function followed(eventMessage) {
   tweetIt("@"+screenName+" Thank You for following! "+quote);
 }
 
+var b64content = fs.readFileSync(filename, {encoding: 'base64'})
+// Get image from url in fs
+function getImage(url, tweet) {
+  console.log("Requesting...");
+  request(url).pipe(fs.createWriteStream(filename))
+  console.log("Requested");
 
+  tweetWithMedia(b64content, tweet);
+}
+
+
+function tweetWithMedia(b64content, tweet) {
+
+  T.post('media/upload', { media_data: b64content }, function uploadedImage (err, data, response) {
+    console.log("Uploading");
+    if (err) {
+      console.log(err);
+    } else {
+
+      var mediaIdStr = data.media_id_string
+      var altText = "Pokémon of the day"
+      var meta_params = { media_id: mediaIdStr, alt_text: { text: altText } }
+
+      T.post('media/metadata/create', meta_params, function (err, data, response) {
+        console.log("Posting");
+        if (!err) {
+          // now we can reference the media and post a tweet (media will attach to the tweet)
+          var params = {
+            status: tweet,
+            media_ids: [mediaIdStr]
+          }
+          tweetIt(params);
+        } else {
+          console.log(err);
+        }
+      })
+    }
+  }
+)}
+
+
+
+// Random tweet
 function tweetRandomPokemon() {
   var rand = Math.floor(Math.random() * Math.floor(totalPokemon));
 
+  getPokemonTweet(rand);
 
+}
+
+function getPokemonTweet(rand) {
   P.resource(['/api/v2/pokemon/'+rand,'api/v2/pokemon-species/'+rand])
   .then(response => {
+
+
 
     var name = response[0].name;
 
@@ -67,11 +125,11 @@ function tweetRandomPokemon() {
 
     var tweet = createTweetText(description, formattedName);
 
-
     console.log(tweet);
 
+    var spriteUrl = response[0].sprites.front_default;
+    getImage(spriteUrl, tweet);
 
-    tweetIt(tweet);
 
   })
   .catch(function(error) {
@@ -80,8 +138,8 @@ function tweetRandomPokemon() {
 }
 
 // Post tweet
-function tweetIt(text) {
-  T.post('statuses/update', { status: text }, function(err, data, response) {
+function tweetIt(params) {
+  T.post('statuses/update', params, function(err, data, response) {
     if (err) {
       console.log(err);
     } else {
