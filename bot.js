@@ -25,8 +25,9 @@ var P = new Pokedex(options);
 // create tweet
 const totalPokemon = 802;
 
-// setInterval(tweetRandomPokemon, 1000*10);
-tweetRandomPokemon();
+// Tweet every 24 hours
+setInterval(tweetRandomPokemon, 1000*60*60*24);
+// tweetRandomPokemon();
 
 function tweetRandomPokemon() {
   var rand = Math.floor(Math.random() * Math.floor(totalPokemon));
