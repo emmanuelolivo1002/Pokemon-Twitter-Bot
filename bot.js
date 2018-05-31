@@ -33,7 +33,7 @@ function tweetRandomPokemon() {
   var rand = Math.floor(Math.random() * Math.floor(totalPokemon));
 
 
-  P.resource(['/api/v2/pokemon/'+787,'api/v2/pokemon-species/'+787])
+  P.resource(['/api/v2/pokemon/'+rand,'api/v2/pokemon-species/'+rand])
   .then(response => {
 
     var name = response[0].name;
@@ -63,7 +63,6 @@ function tweetRandomPokemon() {
 }
 
 // Post tweet
-
 function tweetIt(text) {
   T.post('statuses/update', { status: text }, function(err, data, response) {
     console.log(data)
@@ -126,7 +125,7 @@ function getTextEntry(textEntries) {
   var textEntry = '';
   textEntries.some(function(entry){
     if (entry.language.name == 'en' ) {
-      textEntry = entry.flavor_text.replace('\n', ' ');
+      textEntry = entry.flavor_text.replace(/\n/g, ' ');
       return true;
     }
   });
