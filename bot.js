@@ -46,8 +46,6 @@ function tweetRandomPokemon() {
 
     var description = getTextEntry(textEntries);
 
-    // console.log(description);
-
     var tweet = createTweetText(description, formattedName);
 
 
@@ -70,7 +68,6 @@ function tweetIt(text) {
 }
 
 function formatName (name) {
-  console.log(name);
 
   var formattedName = '';
 
@@ -116,7 +113,6 @@ function formatName (name) {
     default: formattedName = name.charAt(0).toUpperCase() + name.slice(1);
 
   }
-  console.log(formattedName);
   return formattedName;
 
 }
